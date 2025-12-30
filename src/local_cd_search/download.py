@@ -75,6 +75,59 @@ class FileDownloader:
             self._copy_url(task_id, progress, url, Path(destination))
 
 
+def ensure_pal_file(target_dir: Path, db_name: str) -> None:
+    """
+    Ensure a .pal file exists for the database with correct STATS_TOTLEN and
+    STATS_NSEQ values. These values are required for RPS-BLAST to produce
+    E-values that match those of the CD-Search web service.
+    https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd_help.shtml#RPSB_web_vs_standalone
+
+    Parameters
+    ----------
+    target_dir : Path
+        Directory containing the database (e.g., Path("database/Smart")).
+    db_name : str
+        Name of the database for the TITLE and DBLIST lines (e.g., "Smart").
+    """
+    pal_path = target_dir / f"{db_name}.pal"
+    STATS_TOTLEN_LINE = "STATS_TOTLEN 5000000"
+    STATS_NSEQ_LINE = "STATS_NSEQ 21000"
+
+    if not pal_path.exists():
+        # Create new .pal file with all four lines
+        pal_path.write_text(
+            f"TITLE {db_name}\n"
+            f"DBLIST {db_name}\n"
+            f"{STATS_TOTLEN_LINE}\n"
+            f"{STATS_NSEQ_LINE}\n"
+        )
+        return
+
+    # File exists: read, modify STATS lines, write back
+    existing_lines = pal_path.read_text().splitlines()
+    new_lines = []
+    stats_totlinen_found = False
+    stats_nseq_found = False
+
+    for line in existing_lines:
+        if line.startswith("STATS_TOTLEN"):
+            stats_totlinen_found = True
+            new_lines.append(STATS_TOTLEN_LINE)
+        elif line.startswith("STATS_NSEQ"):
+            stats_nseq_found = True
+            new_lines.append(STATS_NSEQ_LINE)
+        else:
+            new_lines.append(line)
+
+    # Add missing STATS lines if they weren't found
+    if not stats_totlinen_found:
+        new_lines.append(STATS_TOTLEN_LINE)
+    if not stats_nseq_found:
+        new_lines.append(STATS_NSEQ_LINE)
+
+    pal_path.write_text("\n".join(new_lines) + "\n")
+
+
 def prepare_databases(
     db_dir: str | Path,
     databases: Sequence[str] | None = None,
@@ -158,7 +211,7 @@ def prepare_databases(
                 ensure_dir(target_dir)
 
             with central_console.status(
-                f"Downloading {db_key.lower()} PSSM database..."
+                f"Downloading {db_key} PSSM database..."
             ):
                 tar_name = f"{prefix}_LE.tar.gz"
                 tar_path = target_dir / tar_name
@@ -166,7 +219,8 @@ def prepare_databases(
                 shutil.unpack_archive(str(tar_path), str(target_dir), "gztar")
                 with contextlib.suppress(Exception):
                     tar_path.unlink()
-                central_console.log(f"{db_key.lower()} database download complete.")
+                central_console.log(f"{db_key} database download complete.")
+                ensure_pal_file(target_dir, prefix)
 
         # 2. CDD Metadata (always sync metadata as before)
         # If force is requested and the data directory exists, attempt removal first
@@ -215,6 +269,3 @@ def prepare_databases(
                 else:
                     dl.download(f"{base_url}/{file_name}", target_path, file_name)
         central_console.log("CDD metadata download complete.")
-
-
-__all__ = ["prepare_databases", "FileDownloader"]

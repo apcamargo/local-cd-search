@@ -172,6 +172,3 @@ def set_quiet(quiet: bool = True) -> None:
         If True, ``console.log`` and ``console.print`` will be suppressed.
     """
     console.set_quiet(quiet)
-
-
-__all__ = ["console", "set_quiet", "CentralConsole"]

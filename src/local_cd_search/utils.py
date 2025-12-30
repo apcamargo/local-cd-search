@@ -188,13 +188,3 @@ def downloader_context(
         if devnull is not None:
             with contextlib.suppress(Exception):
                 devnull.close()
-
-
-__all__ = [
-    "PathLike",
-    "ensure_dir",
-    "styled_error",
-    "remove_dir",
-    "run_and_log",
-    "downloader_context",
-]

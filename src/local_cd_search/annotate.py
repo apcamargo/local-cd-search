@@ -87,6 +87,10 @@ def run_pipeline(
         "11",
         "-num_threads",
         str(threads),
+        "-seg",
+        "no",
+        "-comp_based_stats",
+        "1",
         "-out",
         str(results_asn),
     ]
