@@ -110,7 +110,9 @@ def ensure_pal_file(target_dir: Path, db_name: str) -> None:
     stats_nseq_found = False
 
     for line in existing_lines:
-        if line.startswith("STATS_TOTLEN"):
+        if line.startswith("#"):
+            continue
+        elif line.startswith("STATS_TOTLEN"):
             stats_totlinen_found = True
             new_lines.append(STATS_TOTLEN_LINE)
         elif line.startswith("STATS_NSEQ"):

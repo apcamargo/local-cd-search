@@ -81,7 +81,7 @@ The output of `local-cd-search annotate` is a tab-separated file with hits filte
 | accession | Domain accession |
 | short_name | Domain short name (e.g., COG0001) |
 
-> [!WARNING]
+> [!NOTE]
 > Currently, `local-cd-search` only annotates protein domains. Functional sites and structural motifs are not included in the output. Support for these features may be added in future versions.
 
 ## Usage
