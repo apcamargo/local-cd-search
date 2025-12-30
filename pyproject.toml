@@ -1,0 +1,33 @@
+[project]
+name = "local-cd-search"
+version = "0.1.0"
+description = "Protein annotation using local PSSM databases from CDD"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Antonio Camargo", email = "antoniop.camargo@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.3.1",
+    "rich>=14.2.0",
+    "rich-click>=1.9.4",
+]
+
+[project.scripts]
+local-cd-search = "local_cd_search.main:main"
+
+[build-system]
+requires = ["uv_build>=0.9.17,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64"]
+
+[tool.pixi.dependencies]
+rpsbproc = ">=0.5.0,<0.6"
+blast = ">=2.16.0,<3"
+
+[tool.pixi.pypi-dependencies]
+local-cd-search = { path = "." }
