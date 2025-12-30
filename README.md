@@ -65,6 +65,9 @@ local-cd-search annotate proteins.faa results.tsv database
 
 The `local-cd-search` will automatically detect which databases are available and will them for annotation.
 
+> [!NOTE]
+> Currently, `local-cd-search` only annotates protein domains. Functional sites and structural motifs are not included in the output. Support for these features may be added in future versions.
+
 ## Output
 
 The output of `local-cd-search annotate` is a tab-separated file with hits filtered by CDD's curated bit-score thresholds. The following columns are included:
@@ -80,9 +83,6 @@ The output of `local-cd-search annotate` is a tab-separated file with hits filte
 | bitscore | Bit score |
 | accession | Domain accession |
 | short_name | Domain short name (e.g., COG0001) |
-
-> [!NOTE]
-> Currently, `local-cd-search` only annotates protein domains. Functional sites and structural motifs are not included in the output. Support for these features may be added in future versions.
 
 ## Usage
 
