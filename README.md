@@ -24,45 +24,50 @@ uv tool install local-cd-search
 
 ## Quick start
 
-### 1. Download databases
+### Download PSSM databases
 
-Download the full CDD reference database (recommended for comprehensive annotation):
+Download the full CDD database, which is a collection of six individual databases (see table below):
 
 ```sh
 local-cd-search download database cdd
 ```
 
-Or download specific subsets:
+Or download individual databases. For example:
 
 ```sh
-# COG database only (for COG functional annotation)
+# COG database
 local-cd-search download database cog
 
 # Multiple databases
 local-cd-search download database cog pfam tigr
 ```
 
-Available databases:
- - `cdd`
- - `cdd_ncbi`
- - `cog`
- - `kog`
- - `pfam`
- - `prk`
- - `smart`
- - `tigr`
+The databases available for download are:
 
-### 2. Annotate proteins
+| Database | Name | Description |
+| -------- | ---- | ----------- |
+| `cdd` | [CDD](https://www.ncbi.nlm.nih.gov/cdd) | Collection of PSSMs derived from multiple sources (all databases listed below except KOG) |
+| `cdd_ncbi` | [NCBI-curated domains](https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd_help.shtml#NCBI_curated_domains) | Domain models that leverage 3D structural data to define precise boundaries |
+| `cog` | [COG](https://www.ncbi.nlm.nih.gov/research/cog) | Groups of orthologous Prokaryotic proteins |
+| `kog` | [KOG](https://ftp.ncbi.nlm.nih.gov/pub/COG/KOG) | Groups of orthologous Eukaryotic proteins |
+| `pfam` | [Pfam](https://www.ebi.ac.uk/interpro/entry/pfam/#table) | Large collection of protein families and domains from diverse taxa |
+| `prk` | [PRK](https://www.ncbi.nlm.nih.gov/proteinclusters) | NCBI collection of protein clusters containing reference sequences from prokaryotic genomes |
+| `smart` | [SMART](https://smart.embl.de/smart/change_mode.cgi) | Models of domains from proteins involved in signaling, extracellular, and regulatory functions |
+| `tigr` | [TIGRFAM](https://www.ncbi.nlm.nih.gov/refseq/annotation_prok/tigrfams/) | Manually curated models for functional annotation of microbial proteins |
+
+### Annotate proteins
+
+To run annotation on a FASTA file of protein sequences (in this example, `proteins.faa`) and save results to `results.tsv`, run the following command:
 
 ```sh
 local-cd-search annotate proteins.faa results.tsv database
 ```
 
-The tool auto-detects which databases are available and uses them for annotation.
+The `local-cd-search` will automatically detect which databases are available and will them for annotation.
 
 ## Output
 
-`local-cd-search` produces a tab-separated file with hits filtered by CDD's curated bit-score thresholds:
+The output of `local-cd-search annotate` is a tab-separated file with hits filtered by CDD's curated bit-score thresholds. The following columns are included:
 
 | Column | Description |
 |--------|-------------|
@@ -75,6 +80,9 @@ The tool auto-detects which databases are available and uses them for annotation
 | bitscore | Bit score |
 | accession | Domain accession |
 | short_name | Domain short name (e.g., COG0001) |
+
+> [!WARNING]
+> Currently, `local-cd-search` only annotates protein domains. Functional sites and structural motifs are not included in the output. Support for these features may be added in future versions.
 
 ## Usage
 
