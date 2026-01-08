@@ -140,6 +140,28 @@ def run_and_log(
 
 
 @contextmanager
+def persistent_dir(path: PathLike) -> Generator[Path, None, None]:
+    """
+    Context manager that ensures a directory exists and yields its path.
+
+    Unlike tempfile.TemporaryDirectory, this does NOT delete the directory
+    upon exit.
+
+    Parameters
+    ----------
+    path : str | Path
+        Directory path to ensure exists.
+
+    Yields
+    ------
+    Path
+        The path to the existing directory.
+    """
+    p = ensure_dir(path)
+    yield p
+
+
+@contextmanager
 def downloader_context(
     use_console: RichConsole | None = None,
 ) -> Generator[tuple["FileDownloader", IO[str] | None], None, None]:

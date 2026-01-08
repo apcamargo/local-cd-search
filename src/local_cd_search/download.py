@@ -212,9 +212,7 @@ def prepare_databases(
                 )
                 ensure_dir(target_dir)
 
-            with central_console.status(
-                f"Downloading {db_key} PSSM database..."
-            ):
+            with central_console.status(f"Downloading {db_key} PSSM database..."):
                 tar_name = f"{prefix}_LE.tar.gz"
                 tar_path = target_dir / tar_name
                 dl.download(f"{base_tar_url}/{tar_name}", tar_path, tar_name)

@@ -1,4 +1,5 @@
 import sys
+import tempfile
 from pathlib import Path
 
 import rich_click as click
@@ -7,7 +8,7 @@ from local_cd_search.annotate import run_pipeline
 from local_cd_search.download import prepare_databases
 from local_cd_search.logger import console, set_quiet
 from local_cd_search.parser import parse_rpsbproc
-from local_cd_search.utils import ensure_dir, remove_dir
+from local_cd_search.utils import persistent_dir
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -70,15 +71,16 @@ def download(db_dir, databases, force, quiet):
 @click.option(
     "--ns", is_flag=True, help="Include non-specific hits in the output results table."
 )
-@click.option("--sf", is_flag=True, help="Include superfamily hits in the output results table.")
+@click.option(
+    "--sf", is_flag=True, help="Include superfamily hits in the output results table."
+)
 @click.option("--quiet", is_flag=True, help="Suppress non-error console output.")
-@click.option("--keep-tmp", is_flag=True, help="Keep intermediate temporary files.")
 @click.option(
     "--tmp-dir",
-    default="tmp",
+    default=None,
     type=click.Path(file_okay=False, dir_okay=True, writable=True),
-    help="Directory to store intermediate files.",
-    show_default=True,
+    help="Directory to store intermediate files. If not specified, temporary files will be deleted after execution.",
+    show_default=False,
 )
 @click.option(
     "--threads",
@@ -101,6 +103,15 @@ def download(db_dir, databases, force, quiet):
         "(all models meeting E-value significance)."
     ),
 )
+@click.option(
+    "-s",
+    "--sites-output",
+    "sites_output",
+    type=click.Path(writable=True),
+    default=None,
+    help="Path to write functional site annotations.",
+    show_default=False,
+)
 def annotate(
     input_file,
     output_file,
@@ -109,10 +120,10 @@ def annotate(
     ns,
     sf,
     quiet,
-    keep_tmp,
     tmp_dir,
     threads,
     data_mode,
+    sites_output,
 ):
     """
     Run the annotation pipeline.
@@ -121,35 +132,43 @@ def annotate(
         if quiet:
             set_quiet(True)
 
-        # Ensure the tmp directory exists before running the pipeline so
-        # intermediates are created directly inside it.
-        tmp_dir_path = ensure_dir(tmp_dir)
+        # Determine context manager for temporary directory
+        if tmp_dir:
+            # User provided a directory: ensure it exists and do NOT delete it.
+            dir_context = persistent_dir(tmp_dir)
+            console.log(f"Using provided temporary directory: {tmp_dir}")
+        else:
+            # No directory provided: use a temporary one that cleans up automatically.
+            dir_context = tempfile.TemporaryDirectory()
 
-        # Run pipeline with the provided db_dir so intermediates are written there
-        result = run_pipeline(
-            input_file, db_dir, tmp_dir_path, threads, evalue, data_mode
-        )
-        intermediate_path = Path(result)
+        with dir_context as d:
+            # tempfile.TemporaryDirectory yields a string, ensure it's a Path
+            tmp_path = Path(d)
 
-        # Step 2: Use the local parser module as a library
-        console.log(f"Generating the output results table: {output_file}")
-        parse_rpsbproc(
-            input_file=str(intermediate_path),
-            output_file=output_file,
-            include_ns=ns,
-            include_sf=sf,
-        )
+            # Run pipeline with the provided db_dir so intermediates are written there
+            result = run_pipeline(
+                input_file, db_dir, tmp_path, threads, evalue, data_mode
+            )
+            intermediate_path = Path(result)
 
-        # Remove the whole tmp directory unless the user requested to keep it.
-        try:
-            if not keep_tmp and tmp_dir_path.exists():
-                remove_dir(tmp_dir_path)
-                console.log(f"Removed temporary directory: {tmp_dir_path}")
-        except Exception:
-            console.log("Warning: failed to remove temporary directory.")
-            console.print_exception()
+            # Step 2: Use the local parser module as a library
+            console.log(f"Generating the output results table: {output_file}")
+            if sites_output:
+                console.log(
+                    f"Generating the output functional sites table: {sites_output}"
+                )
+
+            parse_rpsbproc(
+                input_file=str(intermediate_path),
+                output_file=output_file,
+                sites_output_file=sites_output,
+                include_ns=ns,
+                include_sf=sf,
+            )
 
         console.log(f"Results saved to {output_file}")
+        if sites_output:
+            console.log(f"Functional sites saved to {sites_output}")
 
     except Exception:
         console.print_exception()

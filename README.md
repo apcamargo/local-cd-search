@@ -65,9 +65,6 @@ local-cd-search annotate proteins.faa results.tsv database
 
 The `local-cd-search` will automatically detect which databases are available and will them for annotation.
 
-> [!NOTE]
-> Currently, `local-cd-search` only annotates protein domains. Functional sites and structural motifs are not included in the output. Support for these features may be added in future versions.
-
 ## Output
 
 The output of `local-cd-search annotate` is a tab-separated file with hits filtered by CDD's curated bit-score thresholds. The following columns are included:
@@ -83,6 +80,36 @@ The output of `local-cd-search annotate` is a tab-separated file with hits filte
 | bitscore | Bit score |
 | accession | Domain accession |
 | short_name | Domain short name (e.g., COG0001) |
+| incomplete | Indicates if there are more than 20% missing from the N- or C- terminal ends (-, N, C, or NC) |
+| superfamily_pssm_id | Superfamily PSSM identifier |
+
+### hit_type
+
+- **Specific**: The top-ranking RPS-BLAST hit (compared to other hits in overlapping intervals) that meets or exceeds a domain-specific E-value threshold. It represents a very high confidence that the query sequence belongs to the same protein family as the sequences used to create the domain model.
+- **Non-specific**: Hits that meet or exceed the RPS-BLAST threshold for statistical significance (default E-value cutoff of 0.01).
+- **Superfamily**: The domain cluster to which the specific and/or non-specific hits belong. This is a set of conserved domain models that generate overlapping annotation on the same protein sequences and are assumed to represent evolutionarily related domains.
+
+### incomplete
+
+Indicates if there are more than 20% missing from the N- or C- terminal compared to the original domain. Possible values are:
+- **-**: No more than 20% shorter on either terminals.
+- **N**: N-terminal has 20% or more missing.
+- **C**: C-terminal has 20% or more missing.
+- **NC**: Both terminals have 20% or more missing.
+
+## Functional sites output
+
+If `--sites-output` is specified, an additional tab-separated file is created with functional site annotations. The following columns are included:
+
+| Column | Description |
+|--------|-------------|
+| query | Protein identifier |
+| annot_type | Specific or Generic |
+| title | Description of the functional site |
+| coordinates | Residues and their positions (e.g., H94,Y96) |
+| complete_size | Total number of residues in the site |
+| mapped_size | Number of residues mapped to the query |
+| source_domain | PSSM ID of the domain where the site is defined |
 
 ## Usage
 
@@ -110,8 +137,8 @@ local-cd-search annotate [OPTIONS] INPUT_FILE OUTPUT_FILE DB_DIR
 | `--ns` | | flag | Include non-specific hits in the output results table. | |
 | `--sf` | | flag | Include superfamily hits in the output results table. | |
 | `--threads` | | `INTEGER` | Number of threads to use for `rpsblast`. | `0` |
+| `--sites-output` | `-s` | `FILE` | Path to write functional site annotations. | |
 | `--data-mode` | `-m` | `std \| rep \| full` | Redundancy level of domain hit data passed to `rpsbproc`: `rep` (best model per region of the query), `std` (best model per source per region), `full` (all models meeting E-value significance). | `std` |
-| `--tmp-dir` | | `DIRECTORY` | Directory to store intermediate files. | `tmp` |
-| `--keep-tmp` | | flag | Keep intermediate temporary files. | |
+| `--tmp-dir` | | `DIRECTORY` | Directory to store intermediate files. If not specified, temporary files will be deleted after execution. | |
 | `--quiet` | | flag | Suppress non-error console output. | |
 | `--help` | `-h` | flag | Show help message and exit. | |
