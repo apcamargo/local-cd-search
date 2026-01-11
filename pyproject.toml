@@ -14,6 +14,10 @@ dependencies = [
     "rich-click>=1.9.4",
 ]
 
+[project.urls]
+documentation = "https://github.com/apcamargo/local-cd-search"
+homepage = "https://github.com/apcamargo/local-cd-search"
+
 [project.scripts]
 local-cd-search = "local_cd_search.main:main"
 
