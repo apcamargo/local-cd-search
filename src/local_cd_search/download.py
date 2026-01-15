@@ -200,7 +200,7 @@ def prepare_databases(
             # If directory exists and not forcing, skip
             if any(target_dir.iterdir()) and not force:
                 central_console.log(
-                    f"{prefix} database already present at {target_dir}; skipping download."
+                    f"{prefix} database already present at {target_dir}. Skipping download."
                 )
                 continue
 

@@ -14,7 +14,7 @@ try:
     rich_click.SHOW_ARGUMENTS = True
     rich_click.GROUP_ARGUMENTS_OPTIONS = True
 except ImportError:
-    # rich_click isn't available; the package still works without it
+    # If rich_click isn't available, the package still works without it
     pass
 
 

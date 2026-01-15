@@ -113,7 +113,7 @@ def parse_rpsbproc(
 
             if line.startswith("QUERY"):
                 parts = line.split("\t")
-                # Defensive: the original format stores query metadata; try to extract the query name if present
+                # The original format stores query metadata. Try to extract the query name if present
                 if len(parts) >= 5:
                     current_query = parts[4].strip().split()[0]
                 else:
